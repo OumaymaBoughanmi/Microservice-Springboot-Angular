@@ -1,0 +1,51 @@
+name: CI/CD - gestion-user
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test-build-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v3
+
+      - name: ☕ Setup Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # Étape 1 - Tests + JaCoCo
+      - name: 🧪 Run tests (JUnit + JaCoCo)
+        run: mvn clean test jacoco:report
+
+      # Étape 2 - Analyse SonarCloud (avec couverture)
+      - name: 📊 SonarCloud Analysis
+        uses: SonarSource/sonarcloud-github-action@v2
+        with:
+          projectBaseDir: .
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECT_KEY: <TON_PROJECT_KEY>
+          SONAR_ORGANIZATION: <TON_ORGANIZATION>
+
+      # Étape 3 - Build JAR
+      - name: 📦 Build JAR
+        run: mvn clean package -DskipTests=true
+
+      # Étape 4 - Build Docker image
+      - name: 🐳 Build Docker image
+        run: docker build -t gestion-user:${{ github.sha }} .
+
+      # Étape 5 - Connexion à Nexus (via ngrok)
+      - name: 🔐 Login to Nexus
+        run: echo "${{ secrets.NEXUS_PASSWORD }}" | docker login ${{ secrets.NEXUS_URL }} -u ${{ secrets.NEXUS_USERNAME }} --password-stdin
+
+      # Étape 6 - Push Docker image vers Nexus
+      - name: 📤 Push Docker image to Nexus
+        run: |
+          docker tag gestion-user:${{ github.sha }} ${{ secrets.NEXUS_URL }}/gestion-user:${{ github.sha }}
+          docker push ${{ secrets.NEXUS_URL }}/gestion-user:${{ github.sha }}
