@@ -3,7 +3,7 @@ name: CI/CD - gestion-user
 on:
   push:
     branches: [gestion-user]
-  workflow_dispatch:
+    workflow_dispatch: {}
 
 jobs:
   test-build-deploy:
