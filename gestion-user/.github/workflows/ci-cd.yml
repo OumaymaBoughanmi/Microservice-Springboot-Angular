@@ -2,7 +2,7 @@ name: CI/CD - gestion-user
 
 on:
   push:
-    branches: [main]
+    branches: [gestion-user]
 
 jobs:
   test-build-deploy:
