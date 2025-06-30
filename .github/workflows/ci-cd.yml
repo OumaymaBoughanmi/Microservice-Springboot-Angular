@@ -29,6 +29,13 @@ jobs:
         run: mvn clean test jacoco:report
         working-directory: gestion-user
 
+      - name: 🔍 Afficher les erreurs de test
+        if: failure()
+        run: |
+          echo "::group::Contenu des rapports de test"
+          cat gestion-user/target/surefire-reports/*.txt || true
+          echo "::endgroup::"
+
       - name: 📊 SonarCloud Analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
