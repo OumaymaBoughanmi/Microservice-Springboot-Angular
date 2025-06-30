@@ -21,6 +21,10 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: 📦 Install user-api locally
+        run: mvn clean install -DskipTests
+        working-directory: user-api
+
       - name: 🧪 Run Tests + Coverage
         run: mvn clean test jacoco:report
         working-directory: gestion-user
